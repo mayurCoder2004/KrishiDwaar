@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import API from '../api/axios';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import API from "../api/axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AuthPage = () => {
-  const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'farmer',
-    location: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "farmer",
+    location: "",
   });
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode");
+  const isRegister = mode === "register";
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const registerUser = async (userData) => {
-    return API.post('/auth/register', userData);
+    return API.post("/auth/register", userData);
   };
 
   const loginUser = async (loginData) => {
-    return API.post('/auth/login', loginData);
+    return API.post("/auth/login", loginData);
   };
 
   const handleSubmit = async (e) => {
@@ -33,42 +37,50 @@ const AuthPage = () => {
     try {
       if (isRegister) {
         if (formData.password !== formData.confirmPassword) {
-          alert('Passwords do not match');
+          toast.error("Passwords do not match");
           return;
         }
 
         const { name, email, password, location, role } = formData;
-        const res = await registerUser({ name, email, password, location, role });
-        alert(res.data.message);
-        setIsRegister(false); // switch to login after successful register
+        const res = await registerUser({
+          name,
+          email,
+          password,
+          location,
+          role,
+        });
+        toast.success(res.data.message);
+        navigate("/auth?mode=login"); // Switch to login after registration
       } else {
         const res = await loginUser({
           email: formData.email,
           password: formData.password,
         });
 
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('role', res.data.user.role);
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", res.data.user.role);
 
-        alert('Login successful');
+        toast.success("Login successful");
 
-        // Navigate to dashboard based on role
-        if (res.data.user.role === 'farmer') {
-          navigate('/farmer/dashboard');
-        } else {
-          navigate('/buyer/dashboard');
-        }
+        setTimeout(() => {
+          if (res.data.user.role === "farmer") {
+            navigate("/farmer/dashboard");
+          } else {
+            navigate("/buyer/dashboard");
+          }
+        }, 1000);
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Something went wrong');
+      toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#FDF9F3] flex items-center justify-center p-6">
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
-          {isRegister ? 'Register' : 'Login'}
+          {isRegister ? "Register" : "Login"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -141,18 +153,18 @@ const AuthPage = () => {
             type="submit"
             className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
           >
-            {isRegister ? 'Register' : 'Login'}
+            {isRegister ? "Register" : "Login"}
           </button>
         </form>
 
         <p className="text-center text-sm mt-4">
-          {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <button
+          {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
+          <a
+            href={`/auth?mode=${isRegister ? "login" : "register"}`}
             className="text-green-600 underline"
-            onClick={() => setIsRegister(!isRegister)}
           >
-            {isRegister ? 'Login' : 'Register'}
-          </button>
+            {isRegister ? "Login" : "Register"}
+          </a>
         </p>
       </div>
     </div>
