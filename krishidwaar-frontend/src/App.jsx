@@ -3,7 +3,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
+import Login from './pages/Login'; // You can remove this if it's now handled by AuthPage
+import AuthPage from './pages/AuthPage'; // ✅ New import
 import FarmerDashboard from './pages/FarmerDashboard';
 import BuyerDashboard from './pages/BuyerDashboard';
 // Add more pages as needed
@@ -15,10 +16,13 @@ const App = () => {
         {/* Landing page */}
         <Route path="/" element={<Dashboard />} />
 
-        {/* Role-based login page */}
-        <Route path="/login/:role" element={<Login />} />
+        {/* Combined Login/Register page */}
+        <Route path="/auth" element={<AuthPage />} /> {/* ✅ New route */}
 
-        {/* After login, dashboards */}
+        {/* Role-based login page (optional: if kept) */}
+        {/* <Route path="/login/:role" element={<Login />} /> */}
+
+        {/* Dashboards */}
         <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
         <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
 

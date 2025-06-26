@@ -1,11 +1,10 @@
-// server.js
-
 const express = require('express');
+const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config');
 const errorHandler = require('./middleware/errorHandler');
 
-// Load environment variables from .env
+// Load environment variables
 dotenv.config();
 
 // Connect to MongoDB
@@ -13,10 +12,11 @@ connectDB();
 
 const app = express();
 
-// Middleware to parse JSON request bodies
-app.use(express.json());
+// Middleware
+app.use(cors()); // Allow cross-origin requests from frontend
+app.use(express.json()); // Parse JSON bodies
 
-// Import route files
+// Routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
@@ -28,7 +28,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/prices', priceRoutes);
 
-// Error handling middleware (must be last)
+// Error handler (should come after routes)
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
