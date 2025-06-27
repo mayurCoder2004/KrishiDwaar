@@ -14,7 +14,7 @@ router.post('/', auth, async (req, res) => {
       quantity,
       pricePerKg,
       location,
-      imageUrl  // remove if schema doesn't have this
+      imageUrl  // optional
     });
 
     await product.save();
@@ -24,13 +24,21 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-
 // Get All Products (Public)
 router.get('/', async (req, res) => {
   try {
-    // Populate farmer's name for display
     const products = await Product.find().populate('farmer', 'name');
     res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ✅ Get Products by Logged-in Farmer
+router.get('/my', auth, async (req, res) => {
+  try {
+    const products = await Product.find({ farmer: req.user.id });
+    res.json({ products });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

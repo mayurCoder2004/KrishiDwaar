@@ -1,18 +1,16 @@
 const express = require('express');
 const Order = require('../models/Order');
-const Product = require('../models/Product'); // <-- Add this line
+const Product = require('../models/Product');
 const auth = require('../middleware/authMiddleware');
 const router = express.Router();
 
-// Place Order (Buyer Only)
+// Place Order (Buyer)
 router.post('/', auth, async (req, res) => {
   try {
     const { productId, quantityOrdered } = req.body;
 
     const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    if (!product) return res.status(404).json({ message: 'Product not found' });
 
     const totalAmount = product.pricePerKg * quantityOrdered;
 
@@ -30,7 +28,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Get Orders of logged-in Buyer
+// Get Orders for Logged-in Buyer
 router.get('/', auth, async (req, res) => {
   try {
     const orders = await Order.find({ buyer: req.user.id }).populate({
@@ -41,6 +39,38 @@ router.get('/', auth, async (req, res) => {
       }
     });
     res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ✅ Get Orders for Farmer
+router.get('/farmer', auth, async (req, res) => {
+  try {
+    const farmerId = req.user.id;
+    const products = await Product.find({ farmer: farmerId });
+    const productIds = products.map(p => p._id);
+
+    const orders = await Order.find({ product: { $in: productIds } })
+      .populate('buyer', 'name email')
+      .populate('product', 'cropName pricePerKg');
+
+    res.json({ orders });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ✅ Update Order Status
+router.put('/:orderId/status', auth, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    order.status = req.body.status || order.status;
+    await order.save();
+
+    res.json(order);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
