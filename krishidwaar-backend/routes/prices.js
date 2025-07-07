@@ -1,8 +1,9 @@
 const express = require('express');
-const MarketPrice = require('../models/MarketPrice');
 const router = express.Router();
+const MarketPrice = require('../models/MarketPrice');
+const { getMandiPrices } = require('../controllers/mandiPriceController');
 
-// Add Market Price (Could be admin or external service)
+// Add new price (optional)
 router.post('/', async (req, res) => {
   try {
     const price = new MarketPrice(req.body);
@@ -13,7 +14,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all Market Prices sorted by latest date
+// Get all saved prices
 router.get('/', async (req, res) => {
   try {
     const prices = await MarketPrice.find().sort({ date: -1 });
@@ -22,5 +23,8 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// ✅ New route for real-time mandi prices
+router.get('/live', getMandiPrices);
 
 module.exports = router;
