@@ -1,8 +1,8 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./config');
-const errorHandler = require('./middleware/errorHandler');
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config");
+const errorHandler = require("./middleware/errorHandler");
 
 // Load environment variables
 dotenv.config();
@@ -17,16 +17,16 @@ app.use(cors()); // Allow cross-origin requests from frontend
 app.use(express.json()); // Parse JSON bodies
 
 // Routes
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-const orderRoutes = require('./routes/orders');
-const priceRoutes = require('./routes/prices');
+const authRoutes = require("./routes/auth");
+const productRoutes = require("./routes/products");
+const orderRoutes = require("./routes/orders");
+const priceRoutes = require("./routes/prices");
 
 // Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/prices', priceRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/prices", priceRoutes);
 
 // Error handler (should come after routes)
 app.use(errorHandler);
